@@ -1,9 +1,14 @@
 [submodule "dependencies/Universal_Robots_ROS2_GZ_Simulation"]
-	path = dependencies/Universal_Robots_ROS2_GZ_Simulation
-	url = https://github.com/exMachina316/Universal_Robots_ROS2_GZ_Simulation.git
+    path = dependencies/Universal_Robots_ROS2_GZ_Simulation
+    url = https://github.com/exMachina316/Universal_Robots_ROS2_GZ_Simulation.git
+    branch = humble
+
 [submodule "dependencies/ur_rail_description"]
-	path = dependencies/ur_rail_description
-	url = https://github.com/exMachina316/ur_rail_description.git
+    path = dependencies/ur_rail_description
+    url = https://github.com/exMachina316/ur_rail_description.git
+    branch = humble
+
 [submodule "dependencies/Universal_Robots_ROS2_Driver"]
-	path = dependencies/Universal_Robots_ROS2_Driver
-	url = https://github.com/exMachina316/Universal_Robots_ROS2_Driver.git
+    path = dependencies/Universal_Robots_ROS2_Driver
+    url = https://github.com/exMachina316/Universal_Robots_ROS2_Driver.git
+    branch = humble
