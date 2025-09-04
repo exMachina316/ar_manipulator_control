@@ -1,0 +1,3 @@
+- Service the requested trajectory with collision-aware IK
+- Provide feedback
+- Implement fail safe

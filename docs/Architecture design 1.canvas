@@ -1,0 +1,13 @@
+{
+	"nodes":[
+		{"id":"a2e79ac29dcb6788","type":"group","x":-1360,"y":-280,"width":1400,"height":640,"label":"Client Side"},
+		{"id":"87b2029d521b683b","type":"group","x":360,"y":-280,"width":760,"height":640,"label":"Server Side"},
+		{"id":"90db9cfc6f5c5d99","type":"file","file":"Reference Trajectory Processor.md","x":-440,"y":-160,"width":400,"height":400},
+		{"id":"f85f1da28bcccc4a","type":"file","file":"Path Planning and Execution Action Server.md","x":520,"y":-160,"width":480,"height":400},
+		{"id":"eafc8d0c99734505","type":"file","file":"Computer Vision Model.md","x":-1240,"y":-160,"width":400,"height":400}
+	],
+	"edges":[
+		{"id":"755cec965bf1ad17","fromNode":"90db9cfc6f5c5d99","fromSide":"right","toNode":"f85f1da28bcccc4a","toSide":"left","fromEnd":"arrow","label":"Reference\nTrajectory\nAction"},
+		{"id":"27070a47ced16d42","fromNode":"eafc8d0c99734505","fromSide":"right","toNode":"90db9cfc6f5c5d99","toSide":"left","label":"Trajectory\nin\nImage frame"}
+	]
+}

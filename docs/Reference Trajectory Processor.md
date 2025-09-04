@@ -1,0 +1,3 @@
+- Waypoint Transformation
+- Trajectory Approximation: Straight Line or Curves
+- Trajectory smoothing for kinematic stability
