@@ -16,7 +16,7 @@ class HandDrawingNode(Node):
         cv2.namedWindow('Hand Drawing', cv2.WINDOW_NORMAL)
 
         # Declare and get the ROS 2 parameter for the model path
-        self.declare_parameter('model_path', "/root/ur_ws/src/ar_draw/models/random_forest_model.1.p")
+        self.declare_parameter('model_path', "/root/ur_ws/src/mr_manipulator/models/random_forest_model_3_gest.p")
         model_path = self.get_parameter('model_path').get_parameter_value().string_value
 
         # Load the hand gesture model
@@ -60,12 +60,20 @@ class HandDrawingNode(Node):
         self.canvas = None
 
         self.waypoints = []
-        self.labels_dict = {0: 'Pointer', 1: 'Hold'}
+        self.labels_dict = {0: 'Hold', 1: 'Pointer', 2: 'Peace'}
 
         # Hold gesture tracking
         self.hold_start_time = None
         self.hold_triggered = False
         self.index_finger_tip = None
+        self.execute_triggered = False
+
+        # Peace gesture tracking
+        self.peace_start_time = None
+        self.peace_triggered = False
+        self.execute_peace_start_time = None
+
+        self.status_text = ""
 
     def camera_info_callback(self, msg):
         self.camera_info = msg
@@ -104,6 +112,9 @@ class HandDrawingNode(Node):
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         results = self.hands.process(frame_rgb)
 
+        if not results.multi_hand_landmarks:
+            self.status_text = ""
+
         if results.multi_hand_landmarks:
             for i in range(len(results.multi_hand_landmarks)):
                 hand_landmarks = results.multi_hand_landmarks[i]
@@ -133,8 +144,24 @@ class HandDrawingNode(Node):
 
                     if predicted_label == 'Pointer':
                         self.index_finger_tip = hand_landmarks.landmark[self.mp_hands.HandLandmark.INDEX_FINGER_TIP]
+                        self.peace_start_time = None
+                        self.peace_triggered = False
+                    elif predicted_label == 'Peace':
+                        if self.peace_start_time is None:
+                            self.peace_start_time = self.get_clock().now()
+
+                        peace_duration = (self.get_clock().now() - self.peace_start_time).nanoseconds / 1e9
+
+                        if not self.peace_triggered and peace_duration > 2.0:
+                            self.get_logger().info("Peace sign detected for 2 seconds, clearing waypoints and canvas.")
+                            self.waypoints = []
+                            self.canvas = np.zeros_like(frame)
+                            self.peace_triggered = True
+                            self.status_text = "Cleared"
                     else:
                         self.index_finger_tip = None
+                        self.peace_start_time = None
+                        self.peace_triggered = False
 
                 if handedness == 'Left':
                     # Display Prediction on Frame
@@ -142,6 +169,9 @@ class HandDrawingNode(Node):
                                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
                     
                     if predicted_label == 'Hold':
+                        self.execute_triggered = False
+                        self.execute_peace_start_time = None
+
                         if self.hold_start_time is None:
                             self.hold_start_time = self.get_clock().now()
 
@@ -149,18 +179,39 @@ class HandDrawingNode(Node):
 
                         if not self.hold_triggered and hold_duration > 1.0:
                             self.get_logger().info("Hold detected for 1 second, registering waypoint.")
-                            print(self.index_finger_tip)
                             if self.index_finger_tip is not None:
                                 self.waypoints.append((self.index_finger_tip.x, self.index_finger_tip.y))
                                 cv2.circle(self.canvas, (int(self.index_finger_tip.x * W), int(self.index_finger_tip.y * H)), 10, self.waypoint_color, -1)
-                                cv2.putText(frame, "Added", (W//2-50, H-10), cv2.FONT_HERSHEY_DUPLEX, 1, (255, 0, 255), 2, cv2.LINE_AA)
+                                self.status_text = "Added"
                             else:
                                 self.get_logger().warn("Index finger tip not detected, cannot register waypoint.")
 
                             self.hold_triggered = True
+
+                    elif predicted_label == 'Peace':
+                        self.hold_start_time = None
+                        self.hold_triggered = False
+
+                        if self.execute_peace_start_time is None:
+                            self.execute_peace_start_time = self.get_clock().now()
+
+                        execute_peace_duration = (self.get_clock().now() - self.execute_peace_start_time).nanoseconds / 1e9
+
+                        if not self.execute_triggered and execute_peace_duration > 2.0 and self.waypoints:
+                            self.status_text = "Executing"
+                            self.get_logger().info("Executing waypoints.")
+                            request = Trigger.Request()
+                            future = self.execute_client.call_async(request)
+                            future.add_done_callback(self.execute_callback)
+                            
+                            self.execute_triggered = True
+
                     else:
                         self.hold_start_time = None
                         self.hold_triggered = False
+                        self.execute_triggered = False
+                        self.execute_peace_start_time = None
+                        self.status_text = ""
 
         pose_array_msg = PoseArray()
         pose_array_msg.header.stamp = self.get_clock().now().to_msg()
@@ -192,6 +243,9 @@ class HandDrawingNode(Node):
         self.get_logger().debug(f"Published {len(pose_array_msg.poses)} waypoints.")
         self.waypoints_publisher.publish(pose_array_msg)
 
+        if self.status_text:
+            cv2.putText(frame, self.status_text, (W//2-50, H-10), cv2.FONT_HERSHEY_DUPLEX, 1, (255, 0, 255), 2, cv2.LINE_AA)
+
         frame_with_drawing = cv2.addWeighted(frame, 0.5, self.canvas, 0.5, 0)
         cv2.imshow('Hand Drawing', frame_with_drawing)
 
@@ -202,6 +256,7 @@ class HandDrawingNode(Node):
             self.get_logger().info("Clearing waypoints and canvas.")
             self.waypoints = []
             self.canvas = np.zeros_like(frame)
+            self.status_text = "Cleared"
         elif cv_key & 0xFF == ord('e'):
             if self.waypoints:
                 self.get_logger().info("Executing waypoints.")
