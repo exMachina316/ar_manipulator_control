@@ -24,9 +24,9 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            # 'action_client = ar_draw.action_client:main',
-            'hand_drawing = ar_draw.hand_drawing:main',
-            # 'test_waypoint_pub = ar_draw.test_waypoint_pub:main',
+            # 'action_client = mr_manipulator.action_client:main',
+            'hand_drawing = mr_manipulator.hand_drawing:main',
+            # 'test_waypoint_pub = mr_manipulator.test_waypoint_pub:main',
         ],
     },
 )

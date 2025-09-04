@@ -4,7 +4,7 @@ import mediapipe as mp
 import numpy as np
 
 # Load the trained model
-with open('/root/ur_ws/src/ar_draw/models/random_forest_model.1.p', 'rb') as f:
+with open('/root/ur_ws/src/mr_manipulator/models/random_forest_model_3_gest.p', 'rb') as f:
     model = pickle.load(f)
 
 # MediaPipe initialization
@@ -14,7 +14,7 @@ mp_drawing_styles = mp.solutions.drawing_styles
 hands = mp_hands.Hands(static_image_mode=False, min_detection_confidence=0.3)
 
 # Class Labels (Update this with your actual class names)
-CLASS_NAMES = {0: "Pointer", 1: "Open Palm", 2: "Peace", 3: "Fist"}
+CLASS_NAMES = {0: "Open Palm", 1: "Pointer", 2: "Peace", 3: "Fist"}
 
 # Start capturing video
 cap = cv2.VideoCapture(0)
