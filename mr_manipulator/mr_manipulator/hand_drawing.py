@@ -7,6 +7,7 @@ import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import PoseArray, Pose
 from std_srvs.srv import Trigger
+from visualization_msgs.msg import Marker
 
 from sensor_msgs.msg import Image, CameraInfo
 from cv_bridge import CvBridge
@@ -32,6 +33,7 @@ class HandDrawingNode(Node):
 
         # Create ROS 2 publisher for waypoints as PoseArray
         self.waypoints_publisher = self.create_publisher(PoseArray, 'waypoints', sensor_qos)
+        self.marker_publisher = self.create_publisher(Marker, 'hand_marker', 10)
 
         # Create ROS 2 client for executing waypoints
         self.execute_client = self.create_client(Trigger, 'execute_waypoints')
@@ -148,6 +150,41 @@ class HandDrawingNode(Node):
                         self.index_finger_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
                         self.peace_start_time = None
                         self.peace_triggered = False
+
+                        # Publish marker for index finger tip
+                        if self.camera_info:
+                            fx = self.camera_info.k[0]
+                            fy = self.camera_info.k[4]
+                            cx = self.camera_info.k[2]
+                            cy = self.camera_info.k[5]
+
+                            u = self.index_finger_tip.x * W
+                            v = self.index_finger_tip.y * H
+
+                            z = 0.860  # a fixed depth
+                            x = (u - cx) * z / fx
+                            y = (v - cy) * z / fy
+
+                            marker = Marker()
+                            marker.header.frame_id = msg.header.frame_id
+                            marker.header.stamp = self.get_clock().now().to_msg()
+                            marker.ns = "hand"
+                            marker.id = 0
+                            marker.type = Marker.SPHERE
+                            marker.action = Marker.ADD
+                            marker.pose.position.x = x
+                            marker.pose.position.y = y
+                            marker.pose.position.z = z
+                            marker.pose.orientation.w = 1.0
+                            marker.scale.x = 0.05
+                            marker.scale.y = 0.05
+                            marker.scale.z = 0.05
+                            marker.color.a = 1.0
+                            marker.color.r = 1.0
+                            marker.color.g = 0.0
+                            marker.color.b = 0.0
+                            self.marker_publisher.publish(marker)
+
                     elif predicted_label == 'Peace':
                         if self.peace_start_time is None:
                             self.peace_start_time = self.get_clock().now()
@@ -169,7 +206,7 @@ class HandDrawingNode(Node):
                     # Display Prediction on Frame
                     cv2.putText(frame, predicted_label, (50, 50),
                                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-                    
+
                     if predicted_label == 'Hold':
                         self.execute_triggered = False
                         self.execute_peace_start_time = None
@@ -205,7 +242,7 @@ class HandDrawingNode(Node):
                             request = Trigger.Request()
                             future = self.execute_client.call_async(request)
                             future.add_done_callback(self.execute_callback)
-                            
+
                             self.execute_triggered = True
 
                     else:

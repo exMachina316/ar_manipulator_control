@@ -75,7 +75,7 @@ private:
       auto const ok = static_cast<bool>(move_group.plan(msg));
       return std::make_pair(ok, msg);
     }();
-    
+
     feedback->status = "Exectuing Start Pose Plan";
     feedback->progress = 0.15;
     goal_handle->publish_feedback(feedback);
