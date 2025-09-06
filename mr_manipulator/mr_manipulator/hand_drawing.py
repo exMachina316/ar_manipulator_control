@@ -1,14 +1,19 @@
-import rclpy
-from rclpy.node import Node
-from geometry_msgs.msg import PoseArray, Pose
-from std_srvs.srv import Trigger
 import pickle
 import cv2
 import mediapipe as mp
 import numpy as np
+
+import rclpy
+from rclpy.node import Node
+from geometry_msgs.msg import PoseArray, Pose
+from std_srvs.srv import Trigger
+
 from sensor_msgs.msg import Image, CameraInfo
 from cv_bridge import CvBridge
 
+mp_hands = mp.solutions.hands
+mp_drawing = mp.solutions.drawing_utils
+mp_drawing_styles = mp.solutions.drawing_styles
 class HandDrawingNode(Node):
     def __init__(self):
         super().__init__('hand_drawing_node')
@@ -16,7 +21,7 @@ class HandDrawingNode(Node):
         cv2.namedWindow('Hand Drawing', cv2.WINDOW_NORMAL)
 
         # Declare and get the ROS 2 parameter for the model path
-        self.declare_parameter('model_path', "/root/ur_ws/src/mr_manipulator/models/random_forest_model_3_gest.p")
+        self.declare_parameter('model_path', "/root/ur_ws/src/mr_manipulator/models/xgboost_model.p")
         model_path = self.get_parameter('model_path').get_parameter_value().string_value
 
         # Load the hand gesture model
@@ -49,10 +54,7 @@ class HandDrawingNode(Node):
             10)
 
         # Initialize Mediapipe Hands
-        self.mp_hands = mp.solutions.hands
-        self.mp_drawing = mp.solutions.drawing_utils
-        self.mp_drawing_styles = mp.solutions.drawing_styles
-        self.hands = self.mp_hands.Hands(max_num_hands=2, min_detection_confidence=0.9)
+        self.hands = mp_hands.Hands(max_num_hands=2, min_detection_confidence=0.9)
 
         # Drawing and erasing configurations
         self.drawing_color = (0, 0, 255)
@@ -120,10 +122,10 @@ class HandDrawingNode(Node):
                 hand_landmarks = results.multi_hand_landmarks[i]
                 handedness = results.multi_handedness[i].classification[0].label
 
-                self.mp_drawing.draw_landmarks(
-                    frame, hand_landmarks, self.mp_hands.HAND_CONNECTIONS,
-                    self.mp_drawing_styles.get_default_hand_landmarks_style(),
-                    self.mp_drawing_styles.get_default_hand_connections_style()
+                mp_drawing.draw_landmarks(
+                    frame, hand_landmarks, mp_hands.HAND_CONNECTIONS,
+                    mp_drawing_styles.get_default_hand_landmarks_style(),
+                    mp_drawing_styles.get_default_hand_connections_style()
                 )
 
                 data_aux = []
@@ -143,7 +145,7 @@ class HandDrawingNode(Node):
                                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
                     if predicted_label == 'Pointer':
-                        self.index_finger_tip = hand_landmarks.landmark[self.mp_hands.HandLandmark.INDEX_FINGER_TIP]
+                        self.index_finger_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
                         self.peace_start_time = None
                         self.peace_triggered = False
                     elif predicted_label == 'Peace':
@@ -180,7 +182,7 @@ class HandDrawingNode(Node):
                         if not self.hold_triggered and hold_duration > 1.0:
                             self.get_logger().info("Hold detected for 1 second, registering waypoint.")
                             if self.index_finger_tip is not None:
-                                self.waypoints.append((self.index_finger_tip.x, self.index_finger_tip.y))
+                                self.waypoints.append((self.index_finger_tip.x * W, self.index_finger_tip.y * H))
                                 cv2.circle(self.canvas, (int(self.index_finger_tip.x * W), int(self.index_finger_tip.y * H)), 10, self.waypoint_color, -1)
                                 self.status_text = "Added"
                             else:
@@ -230,14 +232,13 @@ class HandDrawingNode(Node):
                 pose = Pose()
 
                 # Convert pixel coordinates to camera frame coordinates
-                z = 1.015 # a fixed depth
+                z = 0.860 # a fixed depth
                 x = (u - cx) * z / fx
                 y = (v - cy) * z / fy
 
                 pose.position.x = x
                 pose.position.y = y
                 pose.position.z = z
-                pose.orientation.w = 1.0
                 pose_array_msg.poses.append(pose)
 
         self.get_logger().debug(f"Published {len(pose_array_msg.poses)} waypoints.")

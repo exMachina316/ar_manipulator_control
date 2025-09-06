@@ -4,7 +4,7 @@ import mediapipe as mp
 import numpy as np
 
 # Load the trained model
-with open('/root/ur_ws/src/mr_manipulator/models/random_forest_model_3_gest.p', 'rb') as f:
+with open('/root/ur_ws/src/mr_manipulator/models/xgboost_model.p', 'rb') as f:
     model = pickle.load(f)
 
 # MediaPipe initialization
