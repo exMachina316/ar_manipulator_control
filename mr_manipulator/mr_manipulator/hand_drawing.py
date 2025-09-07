@@ -44,14 +44,14 @@ class HandDrawingNode(Node):
         # Create a subscriber to the image topic
         self.image_subscription = self.create_subscription(
             Image,
-            '/image_raw',
+            '/oak/rgb/image_rect',
             self.image_callback,
             10)
 
         self.camera_info = None
         self.camera_info_subscription = self.create_subscription(
             CameraInfo,
-            '/camera_info',
+            '/oak/rgb/camera_info',
             self.camera_info_callback,
             10)
 
@@ -107,7 +107,7 @@ class HandDrawingNode(Node):
             self.get_logger().error(f"Failed to convert image: {e}")
             return
 
-        frame = cv2.flip(frame, 1)
+        # frame = cv2.flip(frame, 1)
         H, W, _ = frame.shape
 
         if self.canvas is None:
@@ -141,7 +141,7 @@ class HandDrawingNode(Node):
                 # Convert to NumPy array & predict
                 predicted_label = self.labels_dict.get(prediction, "Unknown")
 
-                if handedness == 'Right':
+                if handedness == 'Left':
                     # Display Prediction on Frame
                     cv2.putText(frame, predicted_label, (W-25*len(predicted_label), 50),
                                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
@@ -202,7 +202,7 @@ class HandDrawingNode(Node):
                         self.peace_start_time = None
                         self.peace_triggered = False
 
-                if handedness == 'Left':
+                if handedness == 'Right':
                     # Display Prediction on Frame
                     cv2.putText(frame, predicted_label, (50, 50),
                                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)

@@ -2,4 +2,3 @@
 - Reset Trigger
 - Plan and execute Trigger
 - Draw with index finger
-
