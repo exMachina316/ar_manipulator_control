@@ -1,0 +1,14 @@
+# Goal definition
+geometry_msgs/PoseArray waypoints
+
+---
+
+# Result definition
+bool success
+string message
+
+---
+
+# Feedback definition
+string status
+float32 progress
