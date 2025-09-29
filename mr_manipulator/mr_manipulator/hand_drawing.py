@@ -33,7 +33,7 @@ class HandDrawingNode(Node):
 
         # Create ROS 2 publisher for waypoints as PoseArray
         self.waypoints_publisher = self.create_publisher(PoseArray, 'waypoints', sensor_qos)
-        self.marker_publisher = self.create_publisher(Marker, 'hand_marker', 10)
+        self.marker_publisher = self.create_publisher(Marker, 'hand_marker', sensor_qos)
 
         # Create ROS 2 client for executing waypoints
         self.execute_client = self.create_client(Trigger, 'execute_waypoints')
@@ -143,8 +143,20 @@ class HandDrawingNode(Node):
 
                 if handedness == 'Left':
                     # Display Prediction on Frame
-                    cv2.putText(frame, predicted_label, (W-25*len(predicted_label), 50),
-                                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                    font = cv2.FONT_HERSHEY_DUPLEX
+                    font_scale = 1.5
+                    thickness = 3
+                    color = (0, 255, 0)
+                    outline_color = (0, 0, 0)
+                    (text_width, text_height), baseline = cv2.getTextSize(predicted_label, font, font_scale, thickness)
+                    x = W - text_width - 30
+                    y = 70
+                    # Draw background rectangle for contrast
+                    cv2.rectangle(frame, (x - 10, y - text_height - 10), (x + text_width + 10, y + baseline + 10), (255, 255, 255), -1)
+                    # Draw outline for better visibility
+                    cv2.putText(frame, predicted_label, (x, y), font, font_scale, outline_color, thickness + 2, cv2.LINE_AA)
+                    # Draw main text
+                    cv2.putText(frame, predicted_label, (x, y), font, font_scale, color, thickness, cv2.LINE_AA)
 
                     if predicted_label == 'Pointer':
                         self.index_finger_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
@@ -204,8 +216,20 @@ class HandDrawingNode(Node):
 
                 if handedness == 'Right':
                     # Display Prediction on Frame
-                    cv2.putText(frame, predicted_label, (50, 50),
-                                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                    font = cv2.FONT_HERSHEY_DUPLEX
+                    font_scale = 1.5
+                    thickness = 3
+                    color = (0, 255, 0)
+                    outline_color = (0, 0, 0)
+                    (text_width, text_height), baseline = cv2.getTextSize(predicted_label, font, font_scale, thickness)
+                    x = 30
+                    y = 70
+                    # Draw background rectangle for contrast
+                    cv2.rectangle(frame, (x - 10, y - text_height - 10), (x + text_width + 10, y + baseline + 10), (255, 255, 255), -1)
+                    # Draw outline for better visibility
+                    cv2.putText(frame, predicted_label, (x, y), font, font_scale, outline_color, thickness + 2, cv2.LINE_AA)
+                    # Draw main text
+                    cv2.putText(frame, predicted_label, (x, y), font, font_scale, color, thickness, cv2.LINE_AA)
 
                     if predicted_label == 'Hold':
                         self.execute_triggered = False
@@ -282,7 +306,23 @@ class HandDrawingNode(Node):
         self.waypoints_publisher.publish(pose_array_msg)
 
         if self.status_text:
-            cv2.putText(frame, self.status_text, (W//2-50, H-10), cv2.FONT_HERSHEY_DUPLEX, 1, (255, 0, 255), 2, cv2.LINE_AA)
+            text = self.status_text
+            font = cv2.FONT_HERSHEY_DUPLEX
+            font_scale = 1.5
+            thickness = 3
+            color = (255, 0, 255)
+            outline_color = (0, 0, 0)
+            (text_width, text_height), baseline = cv2.getTextSize(text, font, font_scale, thickness)
+            x = W // 2 - text_width // 2
+            y = H - 30
+
+            # Draw background rectangle for contrast
+            cv2.rectangle(frame, (x - 10, y - text_height - 10), (x + text_width + 10, y + baseline + 10), (255, 255, 255), -1)
+
+            # Draw outline for better visibility
+            cv2.putText(frame, text, (x, y), font, font_scale, outline_color, thickness + 2, cv2.LINE_AA)
+            # Draw main text
+            cv2.putText(frame, text, (x, y), font, font_scale, color, thickness, cv2.LINE_AA)
 
         frame_with_drawing = cv2.addWeighted(frame, 0.5, self.canvas, 0.5, 0)
         cv2.imshow('Hand Drawing', frame_with_drawing)

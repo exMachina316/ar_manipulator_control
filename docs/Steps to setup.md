@@ -25,7 +25,7 @@ ros2 launch ur_moveit_config ur_moveit.launch.py ur_type:=ur5 launch_rviz:=true
 
 1. Run Simulation
 ```bash
-ros2 launch ur_simulation_gz ur_sim_control.launch.py ur_type:=ur5 launch_rviz:=false
+ros2 launch ur_robot_driver ur_control.launch.py ur_type:=ur5 robot_ip:=192.168.0.102 launch_rviz:=false headless_mode:=true
 ```
 
 2. Run moveIt

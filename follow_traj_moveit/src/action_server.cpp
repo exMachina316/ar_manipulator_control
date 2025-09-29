@@ -67,7 +67,7 @@ private:
     moveit_msgs::msg::RobotTrajectory trajectory;
 
     move_group.setPoseTarget(waypoints[0]);
-    move_group.setPlanningTime(10.0);
+    move_group.setPlanningTime(5.0);
 
     auto const [success, plan] = [&move_group]
     {
