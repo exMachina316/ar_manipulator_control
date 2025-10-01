@@ -1,0 +1,20 @@
+/oak1:
+  ros__parameters:
+    camera:
+      i_mx_id: 19443010E16B271300
+      i_nn_type: rgb
+      i_pipeline_type: RGB
+
+/oak2:
+  ros__parameters:
+    camera:
+      i_mx_id: 1944301001C62A1300
+      i_nn_type: rgb
+      i_pipeline_type: RGB
+  
+/oak3:
+  ros__parameters:
+    camera:
+      i_mx_id: 1844301041B7321300
+      i_nn_type: rgb
+      i_pipeline_type: RGB

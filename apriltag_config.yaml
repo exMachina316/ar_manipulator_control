@@ -1,0 +1,7 @@
+apriltag_ros:
+  ros__parameters:
+    family: "36h11"
+    size: 0.15
+    max_hamming: 0
+    z_up: true
+    publish_tf: true

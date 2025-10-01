@@ -6,7 +6,7 @@
 [submodule "dependencies/ur_rail_description"]
     path = dependencies/ur_rail_description
     url = https://github.com/exMachina316/ur_rail_description.git
-    branch = humble
+    branch = main
 
 [submodule "dependencies/Universal_Robots_ROS2_Driver"]
     path = dependencies/Universal_Robots_ROS2_Driver

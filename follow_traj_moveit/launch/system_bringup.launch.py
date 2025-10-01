@@ -16,7 +16,7 @@ def generate_launch_description():
     # Launch arguments
     declare_use_sim_time_cmd = DeclareLaunchArgument(
         'use_sim_time',
-        default_value='True',
+        default_value='False',
         description='Use simulation clock or system clock'
     )
 
@@ -35,8 +35,8 @@ def generate_launch_description():
         parameters=[{
             'use_sim_time': use_sim_time,
             'model_path': model_path,
-            'camera_topic': '/image_raw',
-            'camera_info_topic': '/camera_info'
+            'camera_topic': '/oak/rgb/image_rect',
+            'camera_info_topic': '/oak/rgb/camera_info'
         }]
     )
 

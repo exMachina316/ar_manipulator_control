@@ -67,7 +67,7 @@ private:
     moveit_msgs::msg::RobotTrajectory trajectory;
 
     move_group.setPoseTarget(waypoints[0]);
-    move_group.setPlanningTime(10.0);
+    move_group.setPlanningTime(5.0);
 
     auto const [success, plan] = [&move_group]
     {
@@ -75,7 +75,7 @@ private:
       auto const ok = static_cast<bool>(move_group.plan(msg));
       return std::make_pair(ok, msg);
     }();
-    
+
     feedback->status = "Exectuing Start Pose Plan";
     feedback->progress = 0.15;
     goal_handle->publish_feedback(feedback);
