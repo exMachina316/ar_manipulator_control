@@ -18,6 +18,7 @@ def launch_setup(context, *args, **kwargs):
     namespace = LaunchConfiguration("namespace").perform(context)
     name = LaunchConfiguration("name").perform(context)
     rectify_rgb = LaunchConfiguration("rectify_rgb")
+    use_apriltag = LaunchConfiguration("use_apriltag")
 
     parameter_overrides = {
         "camera": {
@@ -58,6 +59,7 @@ def launch_setup(context, *args, **kwargs):
                     plugin="image_proc::RectifyNode",
                     name="rectify_color_node",
                     namespace=namespace,
+                    parameters=[params_file],
                     remappings=[
                         ("image", f"{name}/{color_sens_name}/image_raw"),
                         ("camera_info", f"{name}/{color_sens_name}/camera_info"),
@@ -78,6 +80,23 @@ def launch_setup(context, *args, **kwargs):
                 )
             ],
         ),
+        LoadComposableNodes(
+            condition=IfCondition(use_apriltag),
+            target_container=f"{namespace}/{name}_container",
+            composable_node_descriptions=[
+                ComposableNode(
+                    package="apriltag_ros",
+                    plugin="apriltag_ros::AprilTagNode",
+                    name="apriltag",
+                    namespace=namespace,
+                    parameters=[params_file],
+                    remappings=[
+                        ("image_rect", f"{name}/{color_sens_name}/image_rect"),
+                        ("camera_info", f"{name}/{color_sens_name}/camera_info"),
+                    ],
+                )
+            ],
+        ),
     ]
 
 
@@ -92,6 +111,7 @@ def generate_launch_description():
             default_value=os.path.join(depthai_prefix, "config", "camera.yaml"),
         ),
         DeclareLaunchArgument("rectify_rgb", default_value="true"),
+        DeclareLaunchArgument("use_apriltag", default_value="true"),
     ]
 
     return LaunchDescription(
