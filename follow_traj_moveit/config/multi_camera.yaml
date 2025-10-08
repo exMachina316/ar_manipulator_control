@@ -1,25 +1,12 @@
-/oak1:
+/oak1/oak1:
   ros__parameters:
     camera:
       i_mx_id: 19443010E16B271300
       i_nn_type: rgb
       i_pipeline_type: RGB
+      i_enable_imu: False
 
-/oak2:
-  ros__parameters:
-    camera:
-      i_mx_id: 1944301001C62A1300
-      i_nn_type: rgb
-      i_pipeline_type: RGB
-
-/oak3:
-  ros__parameters:
-    camera:
-      i_mx_id: 1844301041B7321300
-      i_nn_type: rgb
-      i_pipeline_type: RGB
-
-apriltag:
+/oak1/apriltag:
   ros__parameters:
     image_transport: raw
     family: "36h11"
@@ -27,7 +14,7 @@ apriltag:
 
     tag:
       ids: [0]
-      frames: ["table1_tag"]
+      frames: ["table2_from_oak1"]
       sizes: [0.15]
 
     pose_estimation_method: "pnp"
@@ -36,9 +23,73 @@ apriltag:
       threads: 1          # number of threads
       decimate: 2.0       # decimate resolution for quad detection
       blur: 0.0           # sigma of Gaussian blur for quad detection
-      refine: 1           # snap to strong gradients
+      refine: True           # snap to strong gradients
       sharpening: 0.25    # sharpening of decoded images
-      debug: 0            # write additional debugging images to current working directory
+      debug: False            # write additional debugging images to current working directory
+    
+    max_hamming: 0
+    profile: false
+
+/oak2/oak2:
+  ros__parameters:
+    camera:
+      i_mx_id: 1944301001C62A1300
+      i_nn_type: rgb
+      i_pipeline_type: RGB
+      i_enable_imu: False
+
+/oak2/apriltag:
+  ros__parameters:
+    image_transport: raw
+    family: "36h11"
+    size: 0.15
+
+    tag:
+      ids: [0]
+      frames: ["table2_from_oak2"]
+      sizes: [0.15]
+
+    pose_estimation_method: "pnp"
+
+    detector:
+      threads: 1          # number of threads
+      decimate: 2.0       # decimate resolution for quad detection
+      blur: 0.0           # sigma of Gaussian blur for quad detection
+      refine: True           # snap to strong gradients
+      sharpening: 0.25    # sharpening of decoded images
+      debug: False            # write additional debugging images to current working directory
+    
+    max_hamming: 0
+    profile: false
+
+/oak3/oak3:
+  ros__parameters:
+    camera:
+      i_mx_id: 1844301041B7321300
+      i_nn_type: rgb
+      i_pipeline_type: RGB
+      i_enable_imu: False
+
+/oak3/apriltag:
+  ros__parameters:
+    image_transport: raw
+    family: "36h11"
+    size: 0.15
+
+    tag:
+      ids: [0]
+      frames: ["table2_from_oak3"]
+      sizes: [0.15]
+
+    pose_estimation_method: "pnp"
+
+    detector:
+      threads: 1          # number of threads
+      decimate: 2.0       # decimate resolution for quad detection
+      blur: 0.0           # sigma of Gaussian blur for quad detection
+      refine: True           # snap to strong gradients
+      sharpening: 0.25    # sharpening of decoded images
+      debug: False            # write additional debugging images to current working directory
     
     max_hamming: 0
     profile: false

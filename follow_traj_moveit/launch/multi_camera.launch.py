@@ -25,6 +25,7 @@ def launch_setup(context, *args, **kwargs):
             ),
             launch_arguments={
                 "name": cam_name,
+                "namespace": cam_name,
                 "params_file": params_file,
             }.items(),
         )
