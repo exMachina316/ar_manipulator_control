@@ -44,14 +44,14 @@ class HandDrawingNode(Node):
         # Create a subscriber to the image topic
         self.image_subscription = self.create_subscription(
             Image,
-            '/oak/rgb/image_rect',
+            '/camera/image',
             self.image_callback,
             10)
 
         self.camera_info = None
         self.camera_info_subscription = self.create_subscription(
             CameraInfo,
-            '/oak/rgb/camera_info',
+            '/camera/camera_info',
             self.camera_info_callback,
             10)
 

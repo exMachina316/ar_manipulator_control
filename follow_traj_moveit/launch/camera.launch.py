@@ -108,9 +108,11 @@ def launch_setup(context, *args, **kwargs):
         parameters=[{
             'use_sim_time': use_sim_time,
             'model_path': model_path,
-            'camera_topic': f"{name}/rgb/image_rect",
-            'camera_info_topic': f"{name}/rgb/camera_info",
-        }]
+        }],
+        remappings=[
+            ('/camera/image', f'{name}/rgb/image_rect'),
+            ('/camera/camera_info', f'{name}/rgb/camera_info'),
+        ]
     )
 
     perception_layer = [hand_drawing_node]

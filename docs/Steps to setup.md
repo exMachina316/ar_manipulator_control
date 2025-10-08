@@ -25,7 +25,7 @@ ros2 launch ur_moveit_config ur_moveit.launch.py ur_type:=ur5 launch_rviz:=true
 
 1. Run Simulation
 ```bash
-ros2 launch ur_robot_driver ur_control.launch.py ur_type:=ur5 robot_ip:=192.168.0.102 launch_rviz:=false headless_mode:=true
+ros2 launch ur_simulation_gz ur_sim_control.launch.py ur_type:=ur5 launch_rviz:=false
 ```
 
 2. Run moveIt
@@ -41,15 +41,15 @@ ros2 launch depthai_ros_driver camera.launch.py parent_frame:=world cam_pos_x:=0
 
 2. Run simulation
 ```bash
-ros2 launch ur_simulation_gz ur_sim_control.launch.py ur_type:=ur5 launch_rviz:=false
+ros2 launch ur_robot_driver ur_control.launch.py ur_type:=ur5 robot_ip:=192.168.0.102 launch_rviz:=false headless_mode:=true
 ```
 
 3. Run moveit
 ```bash
-ros2 launch ur_moveit_config ur_moveit.launch.py ur_type:=ur5 launch_rviz:=true use_sim_time:=true
+ros2 launch ur_moveit_config ur_moveit.launch.py ur_type:=ur5 launch_rviz:=true
 ```
 
 4. Bringup solution
 ```bash
-ros2 launch follow_traj_moveit system_bringup.launch.py use_sim_time:=true
+ros2 launch follow_traj_moveit system_bringup.launch.py
 ```
