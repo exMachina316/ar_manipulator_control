@@ -1,4 +1,4 @@
-/oak1/oak1:
+/oak1:
   ros__parameters:
     camera:
       i_mx_id: 19443010E16B271300
@@ -30,11 +30,11 @@
     max_hamming: 0
     profile: false
 
-/oak2/oak2:
+/oak2:
   ros__parameters:
     camera:
       i_mx_id: 1944301001C62A1300
-      i_nn_type: rgb
+      i_nn_type: none
       i_pipeline_type: RGB
       i_enable_imu: False
 
@@ -62,7 +62,7 @@
     max_hamming: 0
     profile: false
 
-/oak3/oak3:
+/oak3:
   ros__parameters:
     camera:
       i_mx_id: 1844301041B7321300

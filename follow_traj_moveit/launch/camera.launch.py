@@ -4,11 +4,11 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.conditions import IfCondition
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, FindExecutable, Command
 from launch_ros.actions import ComposableNodeContainer, LoadComposableNodes, Node
 from launch_ros.descriptions import ComposableNode
-from launch.substitutions import PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
+from launch_ros.parameter_descriptions import ParameterValue
 
 
 def launch_setup(context, *args, **kwargs):
@@ -25,8 +25,33 @@ def launch_setup(context, *args, **kwargs):
     rectify_rgb = LaunchConfiguration("rectify_rgb")
     use_apriltag = LaunchConfiguration("use_apriltag")
     use_sim_time = LaunchConfiguration('use_sim_time', default='False')
+    description_package = LaunchConfiguration("description_package")
+    description_file = LaunchConfiguration("description_file")
 
     model_path = PathJoinSubstitution([mr_manip_share, 'models', 'xgboost_model.p'])
+
+    robot_description_content = Command(
+        [
+            PathJoinSubstitution([FindExecutable(name="xacro")]),
+            " ",
+            PathJoinSubstitution([FindPackageShare(description_package), "urdf", description_file]),
+            " ",
+            "name:=",
+            name
+        ]
+    )
+    robot_description = {
+        "robot_description": ParameterValue(value=robot_description_content, value_type=str)
+    }
+
+    robot_state_publisher_node = Node(
+        package="robot_state_publisher",
+        executable="robot_state_publisher",
+        name="robot_state_publisher",
+        namespace=namespace,
+        output="both",
+        parameters=[robot_description],
+    )
 
     camera_node_container = ComposableNodeContainer(
         name=f"camera_container",
@@ -38,10 +63,10 @@ def launch_setup(context, *args, **kwargs):
                 package="depthai_ros_driver",
                 plugin="depthai_ros_driver::Camera",
                 name=name,
-                namespace=namespace,
                 parameters=[
                     params_file,
                 ],
+                extra_arguments=[{'use_intra_process_comms': True}]
             )
         ],
         arguments=["--ros-args", "--log-level", log_level],
@@ -58,21 +83,22 @@ def launch_setup(context, *args, **kwargs):
                 name="rectify_color_node",
                 namespace=namespace,
                 parameters=[params_file],
+                extra_arguments=[{'use_intra_process_comms': True}],
                 remappings=[
-                    ("image", f"{name}/rgb/image_raw"),
-                    ("camera_info", f"{name}/rgb/camera_info"),
-                    ("image_rect", f"{name}/rgb/image_rect"),
+                    ("image", "rgb/image_raw"),
+                    ("camera_info", "rgb/camera_info"),
+                    ("image_rect", "rgb/image_rect"),
                     (
                         "image_rect/compressed",
-                        f"{name}/rgb/image_rect/compressed",
+                        "rgb/image_rect/compressed",
                     ),
                     (
                         "image_rect/compressedDepth",
-                        f"{name}/rgb/image_rect/compressedDepth",
+                        "rgb/image_rect/compressedDepth",
                     ),
                     (
                         "image_rect/theora",
-                        f"{name}/rgb/image_rect/theora",
+                        "rgb/image_rect/theora",
                     ),
                 ],
             )
@@ -89,9 +115,10 @@ def launch_setup(context, *args, **kwargs):
                 name="apriltag",
                 namespace=namespace,
                 parameters=[params_file],
+                extra_arguments=[{'use_intra_process_comms': True}],
                 remappings=[
-                    ("image_rect", f"{name}/rgb/image_rect"),
-                    ("camera_info", f"{name}/rgb/camera_info"),
+                    ("image_rect", "rgb/image_rect"),
+                    ("camera_info", "rgb/camera_info"),
                 ],
             )
         ],
@@ -110,13 +137,13 @@ def launch_setup(context, *args, **kwargs):
             'model_path': model_path,
         }],
         remappings=[
-            ('/camera/image', f'{name}/rgb/image_rect'),
-            ('/camera/camera_info', f'{name}/rgb/camera_info'),
+            ('/camera/image', 'rgb/image_rect'),
+            ('/camera/camera_info', 'rgb/camera_info'),
         ]
     )
 
     perception_layer = [hand_drawing_node]
-    return camera_layer + perception_layer
+    return camera_layer + perception_layer + [robot_state_publisher_node]
 
 
 def generate_launch_description():
@@ -124,7 +151,7 @@ def generate_launch_description():
 
     declared_arguments = [
         DeclareLaunchArgument("name", default_value="oak"),
-        DeclareLaunchArgument("namespace", default_value=""),
+        DeclareLaunchArgument("namespace", default_value="oak"),
         DeclareLaunchArgument(
             "params_file",
             default_value=os.path.join(depthai_prefix, "config", "camera.yaml"),
@@ -132,6 +159,8 @@ def generate_launch_description():
         DeclareLaunchArgument("rectify_rgb", default_value="true"),
         DeclareLaunchArgument("use_apriltag", default_value="true"),
         DeclareLaunchArgument('use_sim_time', default_value='False'),
+        DeclareLaunchArgument("description_package", default_value="ur_rail_description"),
+        DeclareLaunchArgument("description_file", default_value="oak_camera.xacro"),
     ]
 
     return LaunchDescription(

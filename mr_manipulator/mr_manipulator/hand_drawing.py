@@ -36,7 +36,7 @@ class HandDrawingNode(Node):
         self.marker_publisher = self.create_publisher(Marker, 'hand_marker', sensor_qos)
 
         # Create ROS 2 client for executing waypoints
-        self.execute_client = self.create_client(Trigger, 'execute_waypoints')
+        self.execute_client = self.create_client(Trigger, '/execute_waypoints')
 
         # Initialize CvBridge
         self.bridge = CvBridge()
