@@ -27,19 +27,6 @@ def generate_launch_description():
     )
 
     # Nodes
-    hand_drawing_node = Node(
-        package='mr_manipulator',
-        executable='hand_drawing',
-        name='hand_drawing',
-        output='screen',
-        parameters=[{
-            'use_sim_time': use_sim_time,
-            'model_path': model_path,
-            'camera_topic': '/oak/rgb/image_rect',
-            'camera_info_topic': '/oak/rgb/camera_info'
-        }]
-    )
-
     test_waypoint_pub_node = Node(
         package='mr_manipulator',
         executable='test_waypoint_pub',
@@ -68,28 +55,6 @@ def generate_launch_description():
         parameters=[{'use_sim_time': use_sim_time}]
     )
 
-    static_tf2_broadcaster = Node(
-        package='follow_traj_moveit',
-        executable='static_tf2_broadcaster',
-        name='static_tf2_broadcaster',
-        output='screen',
-        parameters=[{
-            'world_to_camera': {
-                'parent_frame': 'table1',
-                'child_frame': 'oak',
-                'translation': [0.155, 0.0, 0.46],
-                'rotation': [0.0, 0.0, 3.1414]
-            },
-            # 'camera_to_optical': {
-            #     'parent_frame': 'camera_frame',
-            #     'child_frame': 'camera_optical_frame',
-            #     'translation': [0.0, 0.0, 0.0],
-            #     'rotation': [-1.57, 0.0, -1.57]
-            # },
-            'use_sim_time': use_sim_time
-        }],
-    )
-
     trajectory_preprocessor_node = Node(
         package='follow_traj_moveit',
         executable='traj_preprocess',
@@ -108,9 +73,6 @@ def generate_launch_description():
         
         # Nodes
         action_server_node,
-        hand_drawing_node,
-        # test_waypoint_pub_node,
         action_client_node,
-        # static_tf2_broadcaster,
         trajectory_preprocessor_node
     ])
