@@ -8,7 +8,6 @@ from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, Find
 from launch_ros.actions import ComposableNodeContainer, LoadComposableNodes, Node
 from launch_ros.descriptions import ComposableNode
 from launch_ros.substitutions import FindPackageShare
-from launch_ros.parameter_descriptions import ParameterValue
 
 
 def launch_setup(context, *args, **kwargs):
@@ -25,33 +24,8 @@ def launch_setup(context, *args, **kwargs):
     rectify_rgb = LaunchConfiguration("rectify_rgb")
     use_apriltag = LaunchConfiguration("use_apriltag")
     use_sim_time = LaunchConfiguration('use_sim_time', default='False')
-    description_package = LaunchConfiguration("description_package")
-    description_file = LaunchConfiguration("description_file")
 
     model_path = PathJoinSubstitution([mr_manip_share, 'models', 'xgboost_model.p'])
-
-    robot_description_content = Command(
-        [
-            PathJoinSubstitution([FindExecutable(name="xacro")]),
-            " ",
-            PathJoinSubstitution([FindPackageShare(description_package), "urdf", description_file]),
-            " ",
-            "name:=",
-            name
-        ]
-    )
-    robot_description = {
-        "robot_description": ParameterValue(value=robot_description_content, value_type=str)
-    }
-
-    robot_state_publisher_node = Node(
-        package="robot_state_publisher",
-        executable="robot_state_publisher",
-        name="robot_state_publisher",
-        namespace=namespace,
-        output="both",
-        parameters=[robot_description],
-    )
 
     camera_node_container = ComposableNodeContainer(
         name=f"camera_container",
@@ -65,6 +39,7 @@ def launch_setup(context, *args, **kwargs):
                 name=name,
                 parameters=[
                     params_file,
+                    {"use_sim_time": use_sim_time},
                 ],
                 extra_arguments=[{'use_intra_process_comms': True}]
             )
@@ -82,7 +57,10 @@ def launch_setup(context, *args, **kwargs):
                 plugin="image_proc::RectifyNode",
                 name="rectify_color_node",
                 namespace=namespace,
-                parameters=[params_file],
+                parameters=[
+                    params_file,
+                    {"use_sim_time": use_sim_time},
+                ],
                 extra_arguments=[{'use_intra_process_comms': True}],
                 remappings=[
                     ("image", "rgb/image_raw"),
@@ -114,7 +92,10 @@ def launch_setup(context, *args, **kwargs):
                 plugin="AprilTagNode",
                 name="apriltag",
                 namespace=namespace,
-                parameters=[params_file],
+                parameters=[
+                    params_file,
+                    {"use_sim_time": use_sim_time},
+                ],
                 extra_arguments=[{'use_intra_process_comms': True}],
                 remappings=[
                     ("image_rect", "rgb/image_rect"),
@@ -142,8 +123,11 @@ def launch_setup(context, *args, **kwargs):
         ]
     )
 
-    perception_layer = [hand_drawing_node]
-    return camera_layer + perception_layer + [robot_state_publisher_node]
+    perception_layer = [
+        hand_drawing_node,
+    ]
+
+    return camera_layer + perception_layer
 
 
 def generate_launch_description():
@@ -159,8 +143,6 @@ def generate_launch_description():
         DeclareLaunchArgument("rectify_rgb", default_value="true"),
         DeclareLaunchArgument("use_apriltag", default_value="true"),
         DeclareLaunchArgument('use_sim_time', default_value='False'),
-        DeclareLaunchArgument("description_package", default_value="ur_rail_description"),
-        DeclareLaunchArgument("description_file", default_value="oak_camera.xacro"),
     ]
 
     return LaunchDescription(
