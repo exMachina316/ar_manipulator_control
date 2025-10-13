@@ -1,0 +1,5 @@
+/waypoint_manager:
+  ros__parameters:
+    camera_names: ['oak1', 'oak2', 'oak3']
+    world_frame: 'world'
+    
