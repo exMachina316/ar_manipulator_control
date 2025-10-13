@@ -24,7 +24,7 @@ class WaypointManagerNode(Node):
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
 
         # Publishers
-        self.waypoints_publisher = self.create_publisher(PoseArray, 'waypoints', 10)
+        self.waypoints_publisher = self.create_publisher(PoseArray, '/waypoints', 10)
 
         # Service Client
         self.execute_client = self.create_client(Trigger, '/execute_waypoints')

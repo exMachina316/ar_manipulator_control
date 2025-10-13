@@ -13,12 +13,11 @@ class ExecuteWayPointsClient(Node):
         self.servicing = False
         
         # Create a subscription 
-        sensor_qos = rclpy.qos.qos_profile_sensor_data
         self._waypoint_sub = self.create_subscription(
             PoseArray,
             'waypoints_transformed',
             self.waypoint_callback,
-            sensor_qos
+            10
         )
 
         # Create service

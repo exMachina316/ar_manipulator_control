@@ -29,13 +29,10 @@ public:
     tf_listener_ =
         std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
-    // Create sensor data QoS profile
-    auto sensor_qos = rclcpp::SensorDataQoS();
-
     using std::placeholders::_1;
 
-    publisher_ = this->create_publisher<geometry_msgs::msg::PoseArray>("waypoints_transformed", sensor_qos);
-    subscription_ = this->create_subscription<geometry_msgs::msg::PoseArray>("waypoints", sensor_qos, std::bind(&FrameListener::waypoint_callback, this, _1));
+    publisher_ = this->create_publisher<geometry_msgs::msg::PoseArray>("/waypoints_transformed", 10);
+    subscription_ = this->create_subscription<geometry_msgs::msg::PoseArray>("/waypoints", 10, std::bind(&FrameListener::waypoint_callback, this, _1));
   }
 
 private:

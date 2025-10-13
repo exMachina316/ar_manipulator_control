@@ -33,14 +33,6 @@ ament_target_dependencies(action_server
   action_msgs
 )
 
-add_executable(static_tf2_broadcaster src/static_transform_publisher.cpp)
-ament_target_dependencies(static_tf2_broadcaster
-  rclcpp
-  tf2
-  tf2_ros
-  geometry_msgs
-)
-
 add_executable(traj_preprocess src/trajectory_preprocessor.cpp)
 ament_target_dependencies(traj_preprocess
   geometry_msgs
@@ -50,11 +42,19 @@ ament_target_dependencies(traj_preprocess
   tf2_geometry_msgs
 )
 
+add_executable(tf_inverter_node src/tf_inverter_node.cpp)
+ament_target_dependencies(tf_inverter_node
+  rclcpp
+  tf2_ros
+  geometry_msgs
+  tf2_geometry_msgs
+)
+
 # Install targets
 install(TARGETS 
   action_server
-  static_tf2_broadcaster
   traj_preprocess
+  tf_inverter_node
   DESTINATION lib/${PROJECT_NAME})
 
 # Install launch files

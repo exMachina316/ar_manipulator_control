@@ -1,3 +1,6 @@
+import os
+from ament_index_python.packages import get_package_share_directory
+
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument
@@ -6,9 +9,9 @@ from launch.substitutions import PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
-    mr_manip_share = FindPackageShare('mr_manipulator')
-    model_path = PathJoinSubstitution([mr_manip_share, 'models', 'xgboost_model.p'])
-    
+    follow_traj_pkg_share = get_package_share_directory("follow_traj_moveit")
+    waypoint_params_file = os.path.join(follow_traj_pkg_share, "config", "waypoint_manager_params.yaml")
+
     # Launch configuration variables
     use_sim_time = LaunchConfiguration('use_sim_time', default='False')
     planning_frame = LaunchConfiguration('planning_frame', default='world')
@@ -55,6 +58,17 @@ def generate_launch_description():
         parameters=[{'use_sim_time': use_sim_time}]
     )
 
+    waypoint_manager_node = Node(
+        package='mr_manipulator',
+        executable='waypoint_manager',
+        name='waypoint_manager',
+        output='screen',
+        parameters=[
+            waypoint_params_file,
+            {'use_sim_time': use_sim_time}
+        ]
+    )
+
     trajectory_preprocessor_node = Node(
         package='follow_traj_moveit',
         executable='traj_preprocess',
@@ -74,5 +88,6 @@ def generate_launch_description():
         # Nodes
         action_server_node,
         action_client_node,
-        trajectory_preprocessor_node
+        trajectory_preprocessor_node,
+        waypoint_manager_node,
     ])

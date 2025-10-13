@@ -19,9 +19,8 @@ def launch_setup(context, *args, **kwargs):
     use_sim_time = LaunchConfiguration('use_sim_time', default='False')
 
     camera_params_file = os.path.join(follow_traj_pkg_share, "config", "multi_camera.yaml")
-    waypoint_params_file = os.path.join(follow_traj_pkg_share, "config", "waypoint_manager_params.yaml")
 
-    cams = ["oak2"]
+    cams = ["oak2", "oak3"]
 
     nodes = []
     for cam_name in cams:
@@ -37,18 +36,14 @@ def launch_setup(context, *args, **kwargs):
         )
         nodes.append(node)
 
-    waypoint_manager_node = Node(
-        package='mr_manipulator',
-        executable='waypoint_manager',
-        name='waypoint_manager',
+    tf_inverter_node = Node(
+        package='follow_traj_moveit',
+        executable='tf_inverter_node',
+        name='tf_inverter_node',
         output='screen',
-        parameters=[
-            waypoint_params_file,
-            {'use_sim_time': use_sim_time}
-        ]
+        parameters=[{'camera_names': cams}]
     )
-
-    nodes.append(waypoint_manager_node)
+    nodes.append(tf_inverter_node)
 
     return nodes
 
