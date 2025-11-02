@@ -15,8 +15,10 @@ find_package(ur_interfaces REQUIRED)
 find_package(action_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(tf2 REQUIRED)
+find_package(tf2_eigen REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+find_package(moveit_visual_tools REQUIRED)
 
 # Include directories
 include_directories(include)
@@ -50,11 +52,26 @@ ament_target_dependencies(tf_inverter_node
   tf2_geometry_msgs
 )
 
+add_executable(pilz_move_group src/pilz_move_group.cpp)
+target_include_directories(pilz_move_group PUBLIC include)
+ament_target_dependencies(pilz_move_group
+  rclcpp
+  moveit_core
+  tf2_geometry_msgs
+  interactive_markers
+  Eigen3
+  moveit_ros_planning
+  moveit_ros_planning_interface
+  moveit_visual_tools
+)
+
+
 # Install targets
 install(TARGETS 
   action_server
   traj_preprocess
   tf_inverter_node
+  pilz_move_group
   DESTINATION lib/${PROJECT_NAME})
 
 # Install launch files
