@@ -27,6 +27,7 @@ setup(
             'waypoint_manager = mr_manipulator.waypoint_manager:main',
             'action_client = mr_manipulator.action_client:main',
             'hand_drawing = mr_manipulator.hand_drawing:main',
+            'data_collection_node = mr_manipulator.data_collection_node:main',
             # 'test_waypoint_pub = mr_manipulator.test_waypoint_pub:main',
         ],
     },

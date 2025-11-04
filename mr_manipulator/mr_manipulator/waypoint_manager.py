@@ -41,7 +41,7 @@ class WaypointManagerNode(Node):
         sensor_qos = rclpy.qos.qos_profile_sensor_data
 
         # Create ROS 2 publishers
-        self.status_marker_publisher = self.create_publisher(Marker, 'status_marker', sensor_qos)
+        self.status_marker_publisher = self.create_publisher(Marker, '/status_marker', sensor_qos)
 
         # Publishers
         self.waypoints_publisher = self.create_publisher(PoseArray, '/waypoints', 10)
@@ -225,7 +225,7 @@ class WaypointManagerNode(Node):
             return  # Don't process other gestures while waiting for interim point
 
         # Right hand Peace for PTP
-        if dominant_right_gesture == 'Peace':
+        if dominant_right_gesture == 'Hold':
             if self.right_peace_start_time is None:
                 self.right_peace_start_time = self.get_clock().now()
 
@@ -251,7 +251,7 @@ class WaypointManagerNode(Node):
             self.left_peace_triggered = False
 
         # Right hand Hold for CIRC
-        if dominant_right_gesture == 'Hold':
+        if dominant_right_gesture == 'Pointer':
             if self.right_hold_start_time is None:
                 self.right_hold_start_time = self.get_clock().now()
 
