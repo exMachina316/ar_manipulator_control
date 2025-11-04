@@ -8,6 +8,7 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclcpp_action REQUIRED)
 find_package(moveit_core REQUIRED)
 find_package(moveit_ros_planning REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
@@ -27,6 +28,7 @@ include_directories(include)
 add_executable(action_server src/action_server.cpp)
 ament_target_dependencies(action_server
   rclcpp
+  rclcpp_action
   moveit_core
   moveit_ros_planning
   moveit_ros_planning_interface

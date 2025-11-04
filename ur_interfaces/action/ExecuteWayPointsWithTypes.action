@@ -1,0 +1,34 @@
+# Goal definition
+# Array of waypoints to execute
+geometry_msgs/PoseArray waypoints
+
+# Trajectory type for each segment (between consecutive waypoints)
+# Valid values: "PTP", "LIN", "CIRC"
+# Array length should be waypoints.poses.length - 1
+# If empty or length mismatch, defaults to "PTP" for all segments
+string[] trajectory_types
+
+# Interim points for CIRC trajectories
+# For each CIRC segment, an interim point must be provided
+# The array is indexed by the segment that requires it
+# Format: index in trajectory_types array -> interim pose
+# Only required for segments where trajectory_types[i] == "CIRC"
+geometry_msgs/Pose[] interim_points
+int32[] interim_point_indices  # Indices in trajectory_types that have interim points
+
+---
+
+# Result definition
+bool success
+string message
+# Per-segment results
+bool[] segment_success
+string[] segment_messages
+
+---
+
+# Feedback definition
+string status
+float32 progress
+int32 current_segment  # Which segment is currently being processed (0-indexed)
+string current_phase   # "planning", "executing", or "verifying"
