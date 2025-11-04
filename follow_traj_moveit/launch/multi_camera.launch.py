@@ -20,7 +20,7 @@ def launch_setup(context, *args, **kwargs):
 
     camera_params_file = os.path.join(follow_traj_pkg_share, "config", "multi_camera.yaml")
 
-    cams = ["oak2", "oak3"]
+    cams = ["oak1", "oak2", "oak3"]
 
     nodes = []
     for cam_name in cams:
@@ -32,6 +32,7 @@ def launch_setup(context, *args, **kwargs):
                 "name": cam_name,
                 "namespace": cam_name,
                 "params_file": camera_params_file,
+                "use_sim_time": use_sim_time,
             }.items(),
         )
         nodes.append(node)
@@ -41,7 +42,7 @@ def launch_setup(context, *args, **kwargs):
         executable='tf_inverter_node',
         name='tf_inverter_node',
         output='screen',
-        parameters=[{'camera_names': cams}]
+        parameters=[{'camera_names': cams, 'use_sim_time': use_sim_time}]
     )
     nodes.append(tf_inverter_node)
 
