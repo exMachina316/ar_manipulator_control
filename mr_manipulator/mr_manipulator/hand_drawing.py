@@ -5,9 +5,8 @@ import numpy as np
 
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import Vector3Stamped
+from geometry_msgs.msg import PointStamped
 from std_msgs.msg import String
-from visualization_msgs.msg import Marker
 
 from sensor_msgs.msg import Image, CameraInfo
 from cv_bridge import CvBridge
@@ -22,20 +21,17 @@ class HandDrawingNode(Node):
         cv2.namedWindow('Hand Drawing', cv2.WINDOW_NORMAL)
 
         # Declare and get the ROS 2 parameter for the model path
-        self.declare_parameter('model_path', "/root/ur_ws/src/mr_manipulator/models/xgboost_model.p")
+        self.declare_parameter('model_path', "/root/ur_ws/src/mr_manipulator/models/xgboost_model.2.0.0.p")
         model_path = self.get_parameter('model_path').get_parameter_value().string_value
 
         # Load the hand gesture model
         with open(model_path, 'rb') as f:
             self.model = pickle.load(f)
 
-        sensor_qos = rclpy.qos.qos_profile_sensor_data
-
         # Create ROS 2 publishers
-        self.marker_publisher = self.create_publisher(Marker, 'hand_marker', sensor_qos)
         self.left_gesture_publisher = self.create_publisher(String, 'left_hand_gesture', 10)
         self.right_gesture_publisher = self.create_publisher(String, 'right_hand_gesture', 10)
-        self.finger_tip_publisher = self.create_publisher(Vector3Stamped, 'finger_tip_pose', 10)
+        self.finger_tip_publisher = self.create_publisher(PointStamped, 'finger_tip_pose', 10)
 
         # Initialize CvBridge
         self.bridge = CvBridge()
@@ -57,7 +53,7 @@ class HandDrawingNode(Node):
         # Initialize Mediapipe Hands
         self.hands = mp_hands.Hands(max_num_hands=2, min_detection_confidence=0.9)
 
-        self.labels_dict = {0: 'Hold', 1: 'Pointer', 2: 'Peace'}
+        self.labels_dict = {0: "Pointer", 1: "Peace", 2: "Thumbs Up", 3: "Thumbs Down", 4: "Hold"}
         self.status_text = ""
 
     def camera_info_callback(self, msg):
@@ -144,37 +140,16 @@ class HandDrawingNode(Node):
                             y_coord = (v - cy) / fy
 
                             # Publish finger tip pose
-                            vector_stamped_msg = Vector3Stamped()
-                            vector_stamped_msg.header.stamp = self.get_clock().now().to_msg()
-                            vector_stamped_msg.header.frame_id = msg.header.frame_id
+                            point_stamped_msg = PointStamped()
+                            point_stamped_msg.header.stamp = self.get_clock().now().to_msg()
+                            point_stamped_msg.header.frame_id = msg.header.frame_id
 
                             # Unit vector in camera frame pointing to fingertip
-                            vector_stamped_msg.vector.x = x_coord
-                            vector_stamped_msg.vector.y = y_coord
-                            vector_stamped_msg.vector.z = 1.0
+                            point_stamped_msg.point.x = x_coord
+                            point_stamped_msg.point.y = y_coord
+                            point_stamped_msg.point.z = 1.0
 
-                            self.finger_tip_publisher.publish(vector_stamped_msg)
-
-                            # # Publish marker for visualization
-                            # marker = Marker()
-                            # marker.header.frame_id = msg.header.frame_id
-                            # marker.header.stamp = self.get_clock().now().to_msg()
-                            # marker.ns = "hand"
-                            # marker.id = 0
-                            # marker.type = Marker.SPHERE
-                            # marker.action = Marker.ADD
-                            # marker.pose.position.x = x_coord
-                            # marker.pose.position.y = y_coord
-                            # marker.pose.position.z = 1.0
-                            # marker.pose.orientation.w = 1.0
-                            # marker.scale.x = 0.05
-                            # marker.scale.y = 0.05
-                            # marker.scale.z = 0.05
-                            # marker.color.a = 1.0
-                            # marker.color.r = 1.0
-                            # marker.color.g = 0.0
-                            # marker.color.b = 0.0
-                            # self.marker_publisher.publish(marker)
+                            self.finger_tip_publisher.publish(point_stamped_msg)
 
                 if handedness == 'Right':
                     self.right_gesture_publisher.publish(gesture_msg)

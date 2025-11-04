@@ -4,7 +4,7 @@ import mediapipe as mp
 import numpy as np
 
 # Load the trained model
-with open('/root/ur_ws/src/mr_manipulator/models/xgboost_model.p', 'rb') as f:
+with open('/root/ur_ws/src/mr_manipulator/models/xgboost_model.2.0.0.p', 'rb') as f:
     model = pickle.load(f)
 
 # MediaPipe initialization
@@ -14,7 +14,7 @@ mp_drawing_styles = mp.solutions.drawing_styles
 hands = mp_hands.Hands(static_image_mode=False, min_detection_confidence=0.3)
 
 # Class Labels (Update this with your actual class names)
-CLASS_NAMES = {0: "Open Palm", 1: "Pointer", 2: "Peace", 3: "Fist"}
+CLASS_NAMES = {0: "Pointer", 1: "Peace", 2: "Thumbs Up", 3: "Thumbs Down", 4: "Open Palm"}
 
 # Start capturing video
 cap = cv2.VideoCapture(0)
