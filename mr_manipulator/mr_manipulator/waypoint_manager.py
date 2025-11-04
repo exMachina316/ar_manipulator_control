@@ -8,6 +8,7 @@ import tf2_ros
 import tf2_geometry_msgs
 from collections import Counter
 import numpy as np
+from visualization_msgs.msg import Marker
 
 class WaypointManagerNode(Node):
     def __init__(self):
@@ -22,6 +23,11 @@ class WaypointManagerNode(Node):
         # TF2
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
+
+        sensor_qos = rclpy.qos.qos_profile_sensor_data
+
+        # Create ROS 2 publishers
+        self.status_marker_publisher = self.create_publisher(Marker, 'status_marker', sensor_qos)
 
         # Publishers
         self.waypoints_publisher = self.create_publisher(PoseArray, '/waypoints', 10)
@@ -91,6 +97,7 @@ class WaypointManagerNode(Node):
             peace_duration = (self.get_clock().now() - self.peace_start_time).nanoseconds / 1e9
             if not self.peace_triggered and peace_duration > 2.0:
                 self.get_logger().info("Dominant 'Peace' from left hand detected, clearing waypoints.")
+                self.publish_status_text("Clearing waypoints")
                 self.waypoints = []
                 self.publish_waypoints()
                 self.peace_triggered = True
@@ -104,7 +111,7 @@ class WaypointManagerNode(Node):
                 self.hold_start_time = self.get_clock().now()
 
             hold_duration = (self.get_clock().now() - self.hold_start_time).nanoseconds / 1e9
-            if not self.hold_triggered and hold_duration > 1.0:
+            if not self.hold_triggered and hold_duration > 2.0:
                 self.add_triangulated_waypoint()
                 self.hold_triggered = True
         else:
@@ -119,6 +126,7 @@ class WaypointManagerNode(Node):
             execute_peace_duration = (self.get_clock().now() - self.execute_peace_start_time).nanoseconds / 1e9
             if not self.execute_triggered and execute_peace_duration > 2.0 and self.waypoints:
                 self.get_logger().info("Dominant 'Peace' from right hand detected, executing waypoints.")
+                self.publish_status_text("Executing trajectory")
                 request = Trigger.Request()
                 future = self.execute_client.call_async(request)
                 future.add_done_callback(self.execute_callback)
@@ -184,6 +192,7 @@ class WaypointManagerNode(Node):
         self.waypoints.append(pose)
         self.publish_waypoints()
         self.get_logger().info(f"Added triangulated waypoint at {estimated_point}")
+        self.publish_status_text("Waypoint added")
 
     def find_closest_point_to_rays(self, rays):
         """
@@ -217,6 +226,26 @@ class WaypointManagerNode(Node):
         pose_array_msg.poses = self.waypoints
         self.waypoints_publisher.publish(pose_array_msg)
         self.get_logger().debug(f"Published {len(self.waypoints)} waypoints.")
+
+    def publish_status_text(self, text):
+        marker = Marker()
+        marker.header.frame_id = self.world_frame
+        marker.header.stamp = self.get_clock().now().to_msg()
+        marker.ns = "status_text"
+        marker.id = 0
+        marker.type = Marker.TEXT_VIEW_FACING
+        marker.action = Marker.ADD
+        marker.pose.position.x = 0.0
+        marker.pose.position.y = 0.0
+        marker.pose.position.z = 1.5  # Position it somewhere visible
+        marker.pose.orientation.w = 1.0
+        marker.scale.z = 0.1
+        marker.color.a = 1.0
+        marker.color.r = 1.0
+        marker.color.g = 1.0
+        marker.color.b = 1.0
+        marker.text = text
+        self.status_marker_publisher.publish(marker)
 
     def execute_callback(self, future):
         try:
