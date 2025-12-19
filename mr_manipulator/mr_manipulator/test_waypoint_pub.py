@@ -25,12 +25,15 @@ class WaypointPublisherNode(Node):
         pose_array_msg.header.stamp = self.get_clock().now().to_msg()
         pose_array_msg.header.frame_id = 'world'
 
-        for x in np.arange(-0.2, 0.2, 0.001):
+        for x in np.arange(-0.1, 0.1, 0.01):
             pose = Pose()
             pose.position.x = x
-            pose.position.y = 0.3
+            pose.position.y = 0.15 + np.sin(x * 5 * np.pi) * 0.05
             pose.position.z = 1.0
-            pose.orientation.w = 1.0
+            pose.orientation.x = 0.5
+            pose.orientation.y = 0.5
+            pose.orientation.z = -0.5
+            pose.orientation.w = 0.5
             pose_array_msg.poses.append(pose)
         
         self.waypoints_publisher.publish(pose_array_msg)
