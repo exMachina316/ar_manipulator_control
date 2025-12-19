@@ -14,7 +14,7 @@
       i_height: 720
       i_width: 1280
       i_enable_nn: false
-      i_calibration_file: "package://follow_traj_moveit/config/calibration/oak2_rgb.yaml"
+      i_calibration_file: "package://follow_traj_moveit/config/calibration/oak1_rgb.yaml"
 
 /oak1/apriltag:
   ros__parameters:
@@ -23,15 +23,15 @@
     size: 0.15
 
     tag:
-      ids: [0]
-      frames: ["table2_from_oak1"]
-      sizes: [0.15]
+      ids: [0, 12]
+      frames: ["table2_from_oak1", "eef_marker_from_oak1"]
+      sizes: [0.144, 0.06]
 
     pose_estimation_method: "pnp"
 
     detector:
       threads: 1          # number of threads
-      decimate: 2.0       # decimate resolution for quad detection
+      decimate: 0.0       # decimate resolution for quad detection
       blur: 0.0           # sigma of Gaussian blur for quad detection
       refine: True           # snap to strong gradients
       sharpening: 0.25    # sharpening of decoded images
@@ -65,15 +65,15 @@
     size: 0.15
 
     tag:
-      ids: [0]
-      frames: ["table2_from_oak2"]
-      sizes: [0.15]
+      ids: [0, 12]
+      frames: ["table2_from_oak2", "eef_marker_from_oak2"]
+      sizes: [0.144, 0.06]
 
     pose_estimation_method: "pnp"
 
     detector:
       threads: 1          # number of threads
-      decimate: 2.0       # decimate resolution for quad detection
+      decimate: 0.0       # decimate resolution for quad detection
       blur: 0.0           # sigma of Gaussian blur for quad detection
       refine: True           # snap to strong gradients
       sharpening: 0.25    # sharpening of decoded images
@@ -98,7 +98,7 @@
       i_height: 720
       i_width: 1280
       i_enable_nn: false
-      i_calibration_file: "package://follow_traj_moveit/config/calibration/oak2_rgb.yaml"
+      i_calibration_file: "package://follow_traj_moveit/config/calibration/oak3_rgb.yaml"
 
 /oak3/apriltag:
   ros__parameters:
@@ -107,15 +107,15 @@
     size: 0.15
 
     tag:
-      ids: [0]
-      frames: ["table2_from_oak3"]
-      sizes: [0.15]
+      ids: [0, 12]
+      frames: ["table2_from_oak3", "eef_marker_from_oak3"]
+      sizes: [0.144, 0.06]
 
     pose_estimation_method: "pnp"
 
     detector:
       threads: 1          # number of threads
-      decimate: 2.0       # decimate resolution for quad detection
+      decimate: 0.0       # decimate resolution for quad detection
       blur: 0.0           # sigma of Gaussian blur for quad detection
       refine: True           # snap to strong gradients
       sharpening: 0.25    # sharpening of decoded images
