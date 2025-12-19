@@ -24,8 +24,9 @@ def launch_setup(context, *args, **kwargs):
     rectify_rgb = LaunchConfiguration("rectify_rgb")
     use_apriltag = LaunchConfiguration("use_apriltag")
     use_sim_time = LaunchConfiguration('use_sim_time', default='False')
+    use_waypoint_manager = LaunchConfiguration("waypoint_manager", default='False')
 
-    model_path = PathJoinSubstitution([mr_manip_share, 'models', 'xgboost_model.p'])
+    model_path = PathJoinSubstitution([mr_manip_share, 'models', 'xgboost_model.1.0.0.p'])
 
     camera_node_container = ComposableNodeContainer(
         name=f"camera_container",
@@ -113,6 +114,7 @@ def launch_setup(context, *args, **kwargs):
         name='hand_drawing',
         namespace=namespace,
         output='screen',
+        condition=IfCondition(use_waypoint_manager),
         parameters=[{
             'use_sim_time': use_sim_time,
             'model_path': model_path,
@@ -143,6 +145,7 @@ def generate_launch_description():
         DeclareLaunchArgument("rectify_rgb", default_value="true"),
         DeclareLaunchArgument("use_apriltag", default_value="true"),
         DeclareLaunchArgument('use_sim_time', default_value='False'),
+        DeclareLaunchArgument("waypoint_manager", default_value="False"),
     ]
 
     return LaunchDescription(
