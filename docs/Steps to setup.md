@@ -34,7 +34,7 @@ ros2 launch ur_moveit_config ur_moveit.launch.py ur_type:=ur5 launch_rviz:=true 
 ```
 
 ## MoveIt Solution
-1. Run Camera
+1. Run 1 Camera at specified position
 ```bash
 ros2 launch depthai_ros_driver camera.launch.py parent_frame:=world cam_pos_x:=0.862 cam_pos_y:=0.17  cam_pos_z:=1.175 cam_yaw:=3.095 cam_pitch:=0.455 cam_roll:=-0.005
 ```
@@ -52,4 +52,9 @@ ros2 launch ur_moveit_config ur_moveit.launch.py ur_type:=ur5 launch_rviz:=true
 4. Bringup solution
 ```bash
 ros2 launch follow_traj_moveit system_bringup.launch.py
+```
+
+5. Camera Calibration
+```bash
+ros2 launch follow_traj_moveit camera
 ```
