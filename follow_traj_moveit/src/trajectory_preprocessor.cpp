@@ -58,6 +58,12 @@ private:
 
         geometry_msgs::msg::PoseStamped pose_out;
         pose_out = tf_buffer_->transform(pose_in, toFrameRel);
+
+        // z-down
+        pose_out.pose.orientation.x = 1.0;
+        pose_out.pose.orientation.y = 0.0;
+        pose_out.pose.orientation.z = 0.0;
+        pose_out.pose.orientation.w = 0.0000963;
         transformed_msg.poses.push_back(pose_out.pose);
       }
 
