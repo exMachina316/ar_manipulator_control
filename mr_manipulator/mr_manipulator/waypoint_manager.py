@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-from geometry_msgs.msg import Vector3Stamped, PoseArray, Pose, PointStamped
+from geometry_msgs.msg import PoseArray, Pose, PointStamped
 from std_srvs.srv import Trigger
 from functools import partial
 import tf2_ros
@@ -16,6 +16,9 @@ class WaypointManagerNode(Node):
 
         self.declare_parameter('camera_names', ['camera'])
         self.declare_parameter('world_frame', 'world')
+        
+        self.declare_parameter('trigger_duration', 4.0)
+        self.trigger_duration = self.get_parameter('trigger_duration').get_parameter_value().double_value
 
         self.camera_names = self.get_parameter('camera_names').get_parameter_value().string_array_value
         self.world_frame = self.get_parameter('world_frame').get_parameter_value().string_value
@@ -51,7 +54,7 @@ class WaypointManagerNode(Node):
                 String, f'/{name}/right_hand_gesture', partial(self.right_gesture_callback, camera_name=name), 10)
             # finger tip comes in as a Vector3Stamped (vector in camera frame)
             finger_tip_sub = self.create_subscription(
-                Vector3Stamped, f'/{name}/finger_tip_pose', partial(self.finger_tip_callback, camera_name=name), 10)
+                PointStamped, f'/{name}/finger_tip_pose', partial(self.finger_tip_callback, camera_name=name), 10)
 
             self.camera_states[name]['subs'].extend([left_gesture_sub, right_gesture_sub, finger_tip_sub])
             self.get_logger().info(f"Subscribed to topics for camera: {name}")
@@ -95,7 +98,7 @@ class WaypointManagerNode(Node):
                 self.peace_start_time = self.get_clock().now()
 
             peace_duration = (self.get_clock().now() - self.peace_start_time).nanoseconds / 1e9
-            if not self.peace_triggered and peace_duration > 2.0:
+            if not self.peace_triggered and peace_duration > self.trigger_duration:
                 self.get_logger().info("Dominant 'Peace' from left hand detected, clearing waypoints.")
                 self.publish_status_text("Clearing waypoints")
                 self.waypoints = []
@@ -111,7 +114,7 @@ class WaypointManagerNode(Node):
                 self.hold_start_time = self.get_clock().now()
 
             hold_duration = (self.get_clock().now() - self.hold_start_time).nanoseconds / 1e9
-            if not self.hold_triggered and hold_duration > 2.0:
+            if not self.hold_triggered and hold_duration > self.trigger_duration:
                 self.add_triangulated_waypoint()
                 self.hold_triggered = True
         else:
@@ -124,7 +127,7 @@ class WaypointManagerNode(Node):
                 self.execute_peace_start_time = self.get_clock().now()
 
             execute_peace_duration = (self.get_clock().now() - self.execute_peace_start_time).nanoseconds / 1e9
-            if not self.execute_triggered and execute_peace_duration > 2.0 and self.waypoints:
+            if not self.execute_triggered and execute_peace_duration > self.trigger_duration and self.waypoints:
                 self.get_logger().info("Dominant 'Peace' from right hand detected, executing waypoints.")
                 self.publish_status_text("Executing trajectory")
                 request = Trigger.Request()
@@ -155,11 +158,7 @@ class WaypointManagerNode(Node):
                     camera_origin.point.z = 0.0
 
                     # Convert the Vector3Stamped finger tip into a PointStamped so we can transform it
-                    fingertip_point = PointStamped()
-                    fingertip_point.header.frame_id = state['finger_tip_pose'].header.frame_id
-                    fingertip_point.point.x = state['finger_tip_pose'].vector.x
-                    fingertip_point.point.y = state['finger_tip_pose'].vector.y
-                    fingertip_point.point.z = state['finger_tip_pose'].vector.z
+                    fingertip_point = state['finger_tip_pose']
 
                     camera_origin_world = tf2_geometry_msgs.do_transform_point(camera_origin, transform)
                     point_transformed = tf2_geometry_msgs.do_transform_point(fingertip_point, transform)
