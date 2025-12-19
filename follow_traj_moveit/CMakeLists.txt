@@ -52,6 +52,14 @@ ament_target_dependencies(tf_inverter_node
   tf2_geometry_msgs
 )
 
+add_executable(extrinsics_calibrator src/extrinsics_calibrator.cpp)
+ament_target_dependencies(extrinsics_calibrator
+  rclcpp
+  tf2_ros
+  geometry_msgs
+  tf2_geometry_msgs
+)
+
 add_executable(pilz_move_group src/pilz_move_group.cpp)
 target_include_directories(pilz_move_group PUBLIC include)
 ament_target_dependencies(pilz_move_group
@@ -71,6 +79,7 @@ install(TARGETS
   action_server
   traj_preprocess
   tf_inverter_node
+  extrinsics_calibrator
   pilz_move_group
   DESTINATION lib/${PROJECT_NAME})
 
