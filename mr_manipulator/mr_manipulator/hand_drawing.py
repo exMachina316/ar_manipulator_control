@@ -53,7 +53,8 @@ class HandDrawingNode(Node):
         # Initialize Mediapipe Hands
         self.hands = mp_hands.Hands(max_num_hands=2, min_detection_confidence=0.9)
 
-        self.labels_dict = {0: "Pointer", 1: "Peace", 2: "Thumbs Up", 3: "Thumbs Down", 4: "Hold"}
+        # self.labels_dict = {0: "Pointer", 1: "Peace", 2: "Thumbs Up", 3: "Thumbs Down", 4: "Hold"}
+        self.labels_dict = {0: "Hold", 1: "Pointer", 2: "Peace"}
         self.status_text = ""
 
     def camera_info_callback(self, msg):
