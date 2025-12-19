@@ -33,8 +33,10 @@ private:
         for (const auto& camera_name : camera_names_)
         {
             std::string source_frame = camera_name;
-            std::string target_frame = "table2_from_" + camera_name;
-            std::string new_source_frame = "table2";
+            // std::string target_frame = "table2_from_" + camera_name;
+            // std::string new_source_frame = "table2";
+            std::string target_frame = "eef_marker_from_" + camera_name;
+            std::string new_source_frame = "eef_marker";
             std::string new_target_frame = camera_name;
 
             geometry_msgs::msg::TransformStamped t;
