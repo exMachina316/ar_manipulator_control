@@ -2,9 +2,10 @@ import pickle
 import cv2
 import mediapipe as mp
 import numpy as np
+import depthai as dai
 
 # Load the trained model
-with open('/root/ur_ws/src/mr_manipulator/models/xgboost_model.2.0.0.p', 'rb') as f:
+with open('/root/ur_ws/src/ar_manipulator_control/mr_manipulator/scripts/xgboost_gesture_model.p', 'rb') as f:
     model = pickle.load(f)
 
 # MediaPipe initialization
@@ -14,15 +15,37 @@ mp_drawing_styles = mp.solutions.drawing_styles
 hands = mp_hands.Hands(static_image_mode=False, min_detection_confidence=0.3)
 
 # Class Labels (Update this with your actual class names)
-CLASS_NAMES = {0: "Pointer", 1: "Peace", 2: "Thumbs Up", 3: "Thumbs Down", 4: "Open Palm"}
+CLASS_NAMES = {0: "Pointer", 1: "Peace", 2: "Hold"}
+# CLASS_NAMES = {0: "Pointer", 1: "Peace", 2: "Thumbs Up", 3: "Thumbs Down", 4: "Open Palm"}
 
-# Start capturing video
-cap = cv2.VideoCapture(0)
+# Create DepthAI pipeline
+pipeline = dai.Pipeline()
 
-while cap.isOpened():
-    ret, frame = cap.read()
-    if not ret:
-        break
+# Define color camera node
+cam_rgb = pipeline.create(dai.node.ColorCamera)
+cam_rgb.setPreviewSize(640, 480)
+cam_rgb.setInterleaved(False)
+cam_rgb.setColorOrder(dai.ColorCameraProperties.ColorOrder.BGR)
+cam_rgb.setFps(30)
+
+# Create output
+xout_rgb = pipeline.create(dai.node.XLinkOut)
+xout_rgb.setStreamName("rgb")
+cam_rgb.preview.link(xout_rgb.input)
+
+# Connect to device and start pipeline
+device = dai.Device(pipeline)
+q_rgb = device.getOutputQueue(name="rgb", maxSize=4, blocking=False)
+
+# # Start capturing video
+# cap = cv2.VideoCapture(0)
+
+# while cap.isOpened():
+#     ret, frame = cap.read()
+#     if not ret:
+#         break
+while True:
+    frame = q_rgb.get().getCvFrame()
 
     # Convert frame to RGB
     img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
