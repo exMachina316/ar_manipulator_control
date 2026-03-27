@@ -2,6 +2,7 @@ import cv2
 import mediapipe as mp
 from mediapipe.framework.formats import landmark_pb2
 import numpy as np
+import depthai as dai
 
 # MediaPipe initialization
 mp_hands = mp.solutions.hands
@@ -65,14 +66,35 @@ def get_gesture_prediction(hand_world_landmarks: landmark_pb2.LandmarkList):
     return 0  # No recognized gesture
 
 if __name__ == "__main__":
-    # Start capturing video
-    cap = cv2.VideoCapture(0)
+    # Create DepthAI pipeline
+    pipeline = dai.Pipeline()
 
-    while cap.isOpened():
-        ret, frame = cap.read()
-        frame = cv2.flip(frame, 1)
-        if not ret:
-            break
+    # Define color camera node
+    cam_rgb = pipeline.create(dai.node.ColorCamera)
+    cam_rgb.setPreviewSize(640, 480)
+    cam_rgb.setInterleaved(False)
+    cam_rgb.setColorOrder(dai.ColorCameraProperties.ColorOrder.BGR)
+    cam_rgb.setFps(30)
+
+    # Create output
+    xout_rgb = pipeline.create(dai.node.XLinkOut)
+    xout_rgb.setStreamName("rgb")
+    cam_rgb.preview.link(xout_rgb.input)
+
+    # Connect to device and start pipeline
+    device = dai.Device(pipeline)
+    q_rgb = device.getOutputQueue(name="rgb", maxSize=4, blocking=False)
+    
+    # Start capturing video
+    # cap = cv2.VideoCapture(0)
+
+    # while cap.isOpened():
+    #     ret, frame = cap.read()
+    #     frame = cv2.flip(frame, 1)
+    #     if not ret:
+    #         break
+    while True:
+        frame = q_rgb.get().getCvFrame()
 
         # Convert frame to RGB
         img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -104,5 +126,7 @@ if __name__ == "__main__":
             break
 
     # Release resources
-    cap.release()
+    device.close()
+    # cap.release()
+
     cv2.destroyAllWindows()

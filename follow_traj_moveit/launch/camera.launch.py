@@ -25,7 +25,7 @@ def launch_setup(context, *args, **kwargs):
     use_apriltag = LaunchConfiguration("use_apriltag")
     use_sim_time = LaunchConfiguration('use_sim_time', default='False')
 
-    model_path = PathJoinSubstitution([mr_manip_share, 'models', 'xgboost_model.p'])
+    model_path = PathJoinSubstitution([mr_manip_share, 'models', 'xgboost_gesture_model.p'])
 
     camera_node_container = ComposableNodeContainer(
         name=f"camera_container",

@@ -4,7 +4,7 @@
    sudo apt-get install ros-humble-ur
 ```
    
-2. Robot IP: `192.168.0.102`
+   2. Robot IP: `192.168.0.102`
 
 3. Run calibration
 ```bash

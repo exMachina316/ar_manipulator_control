@@ -53,7 +53,8 @@ class HandDrawingNode(Node):
         # Initialize Mediapipe Hands
         self.hands = mp_hands.Hands(max_num_hands=2, min_detection_confidence=0.9)
 
-        self.labels_dict = {0: "Pointer", 1: "Peace", 2: "Thumbs Up", 3: "Thumbs Down", 4: "Hold"}
+        self.labels_dict = {0: "Pointer", 1: "Peace", 2: "Hold"}
+        # self.labels_dict = {0: "Pointer", 1: "Peace", 2: "Thumbs Up", 3: "Thumbs Down", 4: "Hold"}
         self.status_text = ""
 
     def camera_info_callback(self, msg):
@@ -92,12 +93,14 @@ class HandDrawingNode(Node):
                     mp_drawing_styles.get_default_hand_connections_style()
                 )
 
+                # take only the x and y coordinates of the world landmarks (relative to camera center)
                 data_aux = []
                 hand_world_landmarks = results.multi_hand_world_landmarks[i]
                 for landmark in hand_world_landmarks.landmark:
                     data_aux.append(landmark.x)
                     data_aux.append(landmark.y)
 
+                # make gesture prediction using pretrained model
                 data_aux = np.array(data_aux).reshape(1, -1)
                 prediction = self.model.predict(data_aux)[0]
                 predicted_label = self.labels_dict.get(prediction, "Unknown")
@@ -127,10 +130,10 @@ class HandDrawingNode(Node):
                         index_finger_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
                         
                         if self.camera_info:
-                            fx = self.camera_info.p[0]
-                            fy = self.camera_info.p[5]
-                            cx = self.camera_info.p[2]
-                            cy = self.camera_info.p[6]
+                            fx = self.camera_info.p[0]  # focal length x
+                            fy = self.camera_info.p[5]  # focal length y
+                            cx = self.camera_info.p[2]  # camera center x
+                            cy = self.camera_info.p[6]  # camera center y
 
                             # Normalized camera frame ray pointing to fingertip
                             u = index_finger_tip.x * W

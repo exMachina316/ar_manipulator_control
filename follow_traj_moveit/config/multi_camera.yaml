@@ -24,7 +24,8 @@
 
     tag:
       ids: [0, 12]
-      frames: ["table2_from_oak1", "eef_marker_from_oak1"]
+      frames: ["eef_marker_from_oak1"]
+      # frames: ["table2_from_oak1", "eef_marker_from_oak1"]
       sizes: [0.144, 0.06]
 
     pose_estimation_method: "pnp"
@@ -66,7 +67,8 @@
 
     tag:
       ids: [0, 12]
-      frames: ["table2_from_oak2", "eef_marker_from_oak2"]
+      frames: ["eef_marker_from_oak2"]
+      # frames: ["table2_from_oak2", "eef_marker_from_oak2"]
       sizes: [0.144, 0.06]
 
     pose_estimation_method: "pnp"
@@ -108,7 +110,8 @@
 
     tag:
       ids: [0, 12]
-      frames: ["table2_from_oak3", "eef_marker_from_oak3"]
+      frames: ["eef_marker_from_oak3"]
+      # frames: ["table2_from_oak3", "eef_marker_from_oak3"]
       sizes: [0.144, 0.06]
 
     pose_estimation_method: "pnp"

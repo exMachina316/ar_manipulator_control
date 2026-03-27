@@ -4,14 +4,14 @@ camera_name: /rgb
 camera_matrix:
   rows: 3
   cols: 3
-  data: [1030.80428,    0.     ,  637.53454,
-            0.     , 1026.07132,  352.45846,
+  data: [1040.600125,    0.     ,  637.988563,
+            0.     , 1039.983483,  372.434446,
             0.     ,    0.     ,    1.     ]
 distortion_model: plumb_bob
 distortion_coefficients:
   rows: 1
   cols: 5
-  data: [0.080302, -0.136590, -0.005660, 0.001299, 0.000000]
+  data: [0.091409, -0.140070, 0.005942, 0.001015, 0.000000]
 rectification_matrix:
   rows: 3
   cols: 3
@@ -21,6 +21,6 @@ rectification_matrix:
 projection_matrix:
   rows: 3
   cols: 4
-  data: [1043.22287,    0.     ,  639.0702 ,    0.     ,
-            0.     , 1039.39314,  349.30431,    0.     ,
+  data: [1057.721041,    0.     ,  639.201911,    0.     ,
+            0.     , 1056.009101,  375.899727,    0.     ,
             0.     ,    0.     ,    1.     ,    0.     ]

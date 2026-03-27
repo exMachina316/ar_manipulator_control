@@ -25,7 +25,9 @@ def launch_setup(context, *args, **kwargs):
 
     camera_params_file = os.path.join(follow_traj_pkg_share, "config", "multi_camera.yaml")
 
-    cams = ["oak1", "oak2", "oak3"]
+    # cams = ["oak1"]
+    cams = ["oak1", "oak3"]
+    # cams = ["oak1", "oak2", "oak3"]
 
     nodes = []
     for cam_name in cams:
