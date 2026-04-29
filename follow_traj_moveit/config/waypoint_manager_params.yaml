@@ -2,4 +2,4 @@
   ros__parameters:
     camera_names: ['oak1', 'oak3']
     # camera_names: ['oak1', 'oak2', 'oak3']
-    world_frame: 'base_link'
+    world_frame: 'world'

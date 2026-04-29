@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-from geometry_msgs.msg import PoseArray, Pose, PointStamped
+from geometry_msgs.msg import Vector3Stamped, PoseArray, Pose, PointStamped
 from std_srvs.srv import Trigger
 from functools import partial
 import tf2_ros
@@ -49,9 +49,9 @@ class WaypointManagerNode(Node):
                 String, f'/{name}/left_hand_gesture', partial(self.left_gesture_callback, camera_name=name), 10)
             right_gesture_sub = self.create_subscription(
                 String, f'/{name}/right_hand_gesture', partial(self.right_gesture_callback, camera_name=name), 10)
-            # finger tip is published as PointStamped in the camera optical frame
+            # finger tip comes in as a Vector3Stamped (vector in camera frame)
             finger_tip_sub = self.create_subscription(
-                PointStamped, f'/{name}/finger_tip_pose', partial(self.finger_tip_callback, camera_name=name), 10)
+                Vector3Stamped, f'/{name}/finger_tip_pose', partial(self.finger_tip_callback, camera_name=name), 10)
 
             self.camera_states[name]['subs'].extend([left_gesture_sub, right_gesture_sub, finger_tip_sub])
             self.get_logger().info(f"Subscribed to topics for camera: {name}")
@@ -147,18 +147,19 @@ class WaypointManagerNode(Node):
                         rclpy.time.Time())
 
                     # TF transform utilities operate on PointStamped for point transforms.
+                    # Convert incoming Vector3Stamped to PointStamped for transforming.
                     camera_origin = PointStamped()
                     camera_origin.header.frame_id = state['finger_tip_pose'].header.frame_id
                     camera_origin.point.x = 0.0
                     camera_origin.point.y = 0.0
                     camera_origin.point.z = 0.0
 
-                    # Use the incoming PointStamped fingertip in the source frame.
+                    # Convert the Vector3Stamped finger tip into a PointStamped so we can transform it
                     fingertip_point = PointStamped()
                     fingertip_point.header.frame_id = state['finger_tip_pose'].header.frame_id
-                    fingertip_point.point.x = state['finger_tip_pose'].point.x
-                    fingertip_point.point.y = state['finger_tip_pose'].point.y
-                    fingertip_point.point.z = state['finger_tip_pose'].point.z
+                    fingertip_point.point.x = state['finger_tip_pose'].vector.x
+                    fingertip_point.point.y = state['finger_tip_pose'].vector.y
+                    fingertip_point.point.z = state['finger_tip_pose'].vector.z
 
                     camera_origin_world = tf2_geometry_msgs.do_transform_point(camera_origin, transform)
                     point_transformed = tf2_geometry_msgs.do_transform_point(fingertip_point, transform)
@@ -176,20 +177,12 @@ class WaypointManagerNode(Node):
                 except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
                     self.get_logger().warn(f"Could not transform point from {state['finger_tip_pose'].header.frame_id} to {self.world_frame}: {e}")
 
-        # Removed for now for single camera testing
-        # if len(rays) < 2:
-        #     self.get_logger().warn(f"Need at least 2 cameras to triangulate, but only have {len(rays)}. Cannot add waypoint.")
-        #     return
-        if not rays:
-            self.get_logger().warn("No valid finger tip poses received from any camera. Cannot add waypoint.")
+        if len(rays) < 2:
+            self.get_logger().warn(f"Need at least 2 cameras to triangulate, but only have {len(rays)}. Cannot add waypoint.")
             return
-    
+
         # Find the point that is closest to all rays
         estimated_point = self.find_closest_point_to_rays(rays)
-
-        if estimated_point is None:
-            self.get_logger().warn("Could not determine waypoint position.")
-            return
 
         pose = Pose()
         pose.position.x = estimated_point[0]
