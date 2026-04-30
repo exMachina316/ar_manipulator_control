@@ -51,7 +51,7 @@ class WaypointManagerNode(Node):
                 String, f'/{name}/right_hand_gesture', partial(self.right_gesture_callback, camera_name=name), 10)
             # finger tip comes in as a Vector3Stamped (vector in camera frame)
             finger_tip_sub = self.create_subscription(
-                Vector3Stamped, f'/{name}/finger_tip_pose', partial(self.finger_tip_callback, camera_name=name), 10)
+                PointStamped, f'/{name}/finger_tip_pose', partial(self.finger_tip_callback, camera_name=name), 10)
 
             self.camera_states[name]['subs'].extend([left_gesture_sub, right_gesture_sub, finger_tip_sub])
             self.get_logger().info(f"Subscribed to topics for camera: {name}")
@@ -137,8 +137,13 @@ class WaypointManagerNode(Node):
 
     def add_triangulated_waypoint(self):
         rays = []
+        self.get_logger().info("Adding waypoint based on triangulation of camera rays.")
+        self.get_logger().info(f"Current camera names: {self.camera_names}; camera states: {self.camera_states}")
         for name in self.camera_names:
             state = self.camera_states[name]
+            self.get_logger().info(f"Camera {name}: State: {state}")
+            self.get_logger().info(f"Camera {name}: Left gesture: {state['left_gesture']}, Right gesture: {state['right_gesture']}, Finger tip pose: {state['finger_tip_pose']}")
+            self.get_logger().info(f"Camera {name}: Current finger pose: {state['finger_tip_pose']}")
             if state['finger_tip_pose'] is not None:
                 try:
                     transform = self.tf_buffer.lookup_transform(
@@ -147,19 +152,18 @@ class WaypointManagerNode(Node):
                         rclpy.time.Time())
 
                     # TF transform utilities operate on PointStamped for point transforms.
-                    # Convert incoming Vector3Stamped to PointStamped for transforming.
                     camera_origin = PointStamped()
                     camera_origin.header.frame_id = state['finger_tip_pose'].header.frame_id
                     camera_origin.point.x = 0.0
                     camera_origin.point.y = 0.0
                     camera_origin.point.z = 0.0
 
-                    # Convert the Vector3Stamped finger tip into a PointStamped so we can transform it
+                    # Use the incoming PointStamped fingertip in the source frame.
                     fingertip_point = PointStamped()
                     fingertip_point.header.frame_id = state['finger_tip_pose'].header.frame_id
-                    fingertip_point.point.x = state['finger_tip_pose'].vector.x
-                    fingertip_point.point.y = state['finger_tip_pose'].vector.y
-                    fingertip_point.point.z = state['finger_tip_pose'].vector.z
+                    fingertip_point.point.x = state['finger_tip_pose'].point.x
+                    fingertip_point.point.y = state['finger_tip_pose'].point.y
+                    fingertip_point.point.z = state['finger_tip_pose'].point.z
 
                     camera_origin_world = tf2_geometry_msgs.do_transform_point(camera_origin, transform)
                     point_transformed = tf2_geometry_msgs.do_transform_point(fingertip_point, transform)
@@ -177,12 +181,16 @@ class WaypointManagerNode(Node):
                 except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
                     self.get_logger().warn(f"Could not transform point from {state['finger_tip_pose'].header.frame_id} to {self.world_frame}: {e}")
 
-        if len(rays) < 2:
-            self.get_logger().warn(f"Need at least 2 cameras to triangulate, but only have {len(rays)}. Cannot add waypoint.")
+        if not rays:
+            self.get_logger().warn("No valid finger tip poses received from any camera. Cannot add waypoint.")
             return
 
         # Find the point that is closest to all rays
         estimated_point = self.find_closest_point_to_rays(rays)
+
+        if estimated_point is None:
+            self.get_logger().warn("Could not determine waypoint position.")
+            return
 
         pose = Pose()
         pose.position.x = estimated_point[0]

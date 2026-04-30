@@ -129,6 +129,7 @@ class HandDrawingNode(Node):
                     if predicted_label == 'Pointer':
                         index_finger_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
                         
+                        self.get_logger().info(f"Gotten to the camera info callback, camera info: {self.camera_info}")
                         if self.camera_info:
                             fx = self.camera_info.p[0]  # focal length x
                             fy = self.camera_info.p[5]  # focal length y
@@ -138,6 +139,7 @@ class HandDrawingNode(Node):
                             # Normalized camera frame ray pointing to fingertip
                             u = index_finger_tip.x * W
                             v = index_finger_tip.y * H
+                            self.get_logger().info(f"Index finger tip pixel coordinates: (u={index_finger_tip.x * W}, v={index_finger_tip.y * H})")
 
                             x_coord = (u - cx) / fx
                             y_coord = (v - cy) / fy
