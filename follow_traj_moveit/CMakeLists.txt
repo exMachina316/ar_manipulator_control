@@ -14,11 +14,13 @@ find_package(moveit_ros_planning_interface REQUIRED)
 find_package(ur_interfaces REQUIRED)
 find_package(action_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_eigen REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(moveit_visual_tools REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 # Include directories
 include_directories(include)
@@ -58,7 +60,9 @@ ament_target_dependencies(extrinsics_calibrator
   tf2_ros
   geometry_msgs
   tf2_geometry_msgs
+  ament_index_cpp
 )
+target_link_libraries(extrinsics_calibrator yaml-cpp)
 
 add_executable(pilz_move_group src/pilz_move_group.cpp)
 target_include_directories(pilz_move_group PUBLIC include)

@@ -86,7 +86,15 @@ def launch_setup(context, *args, **kwargs):
         name='extrinsics_calibrator',
         condition=IfCondition(extrincs_calibration),
         output='screen',
-        parameters=[{'camera_names': cams, 'use_sim_time': use_sim_time}]
+        parameters=[
+            {
+                'camera_names': cams, 
+                'use_sim_time': use_sim_time,
+                "extrinsics_calibration_dir": os.path.join(follow_traj_pkg_share, "config", "calibration"),
+                "frame_id": "base_link",
+            }
+        ]
+
     )
 
     calibration_nodes = [

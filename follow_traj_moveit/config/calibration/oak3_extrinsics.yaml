@@ -1,11 +1,11 @@
 child_frame_id: oak3
 frame_id: base_link
 rotation:
-  x: -0.360
-  y: -0.150
-  z: 0.855
-  w: -0.342
+  x: -0.163
+  y: -0.006
+  z: 0.925
+  w: 0.342
 translation:
-  x: 0.957
-  y: 0.643
-  z: 0.523
+  x: 1.143
+  y: -0.140
+  z: 0.370
